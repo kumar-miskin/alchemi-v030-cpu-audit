@@ -75,8 +75,9 @@ Not tested: pretrained MACE fine-tuning, NVIDIA GPU kernels or throughput, batch
 
 - Release source and documentation: https://github.com/NVIDIA/nvalchemi-toolkit
 - Exact tag and source hashes are recorded in `results/audit.json`; the audit uses its original `examples/intermediate/09_offline_distillation.py`.
-- On-policy example: `examples/intermediate/10_onpolicy_distillation.py` in that same pinned source.
-- Upstream contribution policy: `CONTRIBUTING.md` in that same pinned source.
+- Offline example: https://github.com/NVIDIA/nvalchemi-toolkit/blob/v0.3.0/examples/intermediate/09_offline_distillation.py
+- On-policy example: https://github.com/NVIDIA/nvalchemi-toolkit/blob/v0.3.0/examples/intermediate/10_onpolicy_distillation.py
+- Upstream contribution policy: https://github.com/NVIDIA/nvalchemi-toolkit/blob/v0.3.0/CONTRIBUTING.md
 
 ## License
 
