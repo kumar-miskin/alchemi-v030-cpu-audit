@@ -1,0 +1,42 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ TestOnPolicyLabelingOverhead.test_labeling_overhead_stays_within_budget ____
+
+self = <test.training.distillation.test_on_policy.TestOnPolicyLabelingOverhead object at 0x7f0de6954dd0>
+
+    def test_labeling_overhead_stays_within_budget(self) -> None:
+        """Labeling every step of a segment costs a bounded multiple of generating it."""
+        student = _build_demo_model()
+        scorer = _make_scorer(_build_direct_force_teacher(seed=2))
+        labeled = NVTLangevin(student, **_LANGEVIN_KWARGS)
+        labeled.register_hook(TeacherLabelHook(scorer))
+        captured = NVTLangevin(student, **_LANGEVIN_KWARGS)
+        captured.register_hook(
+            TeacherLabelHook(scorer, sink=HostMemory(capacity=10_000))
+        )
+    
+        bare_seconds = self._time_segment(NVTLangevin(student, **_LANGEVIN_KWARGS), 40)
+        labeled_seconds = self._time_segment(labeled, 40)
+        captured_seconds = self._time_segment(captured, 40)
+    
+        measured = (
+            f"generation {bare_seconds:.3f}s; labeling every step "
+            f"{labeled_seconds / bare_seconds:.2f}x; labeling and capturing "
+            f"{captured_seconds / bare_seconds:.2f}x"
+        )
+        assert labeled_seconds / bare_seconds < 3.0, measured
+>       assert captured_seconds / bare_seconds < 4.0, measured
+E       AssertionError: generation 0.044s; labeling every step 1.89x; labeling and capturing 5.82x
+E       assert (0.2533060639998439 / 0.043550138999762567) < 4.0
+
+test/training/distillation/test_on_policy.py:1864: AssertionError
+=============================== warnings summary ===============================
+../alchemi-env/lib/python3.11/site-packages/_pytest/config/__init__.py:1474
+  <venv>/lib/python3.11/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED test/training/distillation/test_on_policy.py::TestOnPolicyLabelingOverhead::test_labeling_overhead_stays_within_budget
+1 failed, 1 warning in 1.30s

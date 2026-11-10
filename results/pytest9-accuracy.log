@@ -1,0 +1,53 @@
+....F............................................ss....s................ [ 93%]
+.....                                                                    [100%]
+=================================== FAILURES ===================================
+_ TestEvaluateAccuracy.test_metrics_do_not_depend_on_how_the_holdout_is_batched _
+
+self = <test.training.distillation.test_evaluation_accuracy.TestEvaluateAccuracy object at 0x7f3d5fbd9d90>
+
+    def test_metrics_do_not_depend_on_how_the_holdout_is_batched(self) -> None:
+        """The same systems split into one or two batches give the same metrics."""
+        student = _build_demo_model()
+        split = _make_holdout()
+        joined = [
+            Batch.from_data_list([*split[0].to_data_list(), *split[1].to_data_list()])
+        ]
+>       assert evaluate_accuracy(student, split).to_dict() == pytest.approx(
+            evaluate_accuracy(student, joined).to_dict(), rel=1e-6
+        )
+
+test/training/distillation/test_evaluation_accuracy.py:557: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../alchemi-env/lib/python3.11/site-packages/_pytest/approx.py:384: in __eq__
+    return super().__eq__(actual)
+           ^^^^^^^^^^^^^^^^^^^^^^
+../alchemi-env/lib/python3.11/site-packages/_pytest/approx.py:138: in __eq__
+    return all(
+../alchemi-env/lib/python3.11/site-packages/_pytest/approx.py:139: in <genexpr>
+    a == self._approx_scalar(x) for a, x in self._yield_comparisons(actual)
+         ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <[TypeError('expected value must support abs(...) when relative tolerance is used, got str') raised in repr()] ApproxMapping object at 0x7f3d5fbea390>
+x = 'accuracy'
+
+    def _approx_scalar(self, x) -> ApproxScalar[Any] | ApproxTimedelta:
+        if isinstance(x, Decimal):
+            return ApproxDecimal(x, rel=self.rel, abs=self.abs, nan_ok=self.nan_ok)
+        if isinstance(x, (datetime, timedelta)):
+            return ApproxTimedelta(x, rel=self.rel, abs=self.abs, nan_ok=self.nan_ok)
+>       return ApproxScalar(x, rel=self.rel, abs=self.abs, nan_ok=self.nan_ok)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: expected value must support abs(...) when relative tolerance is used, got str
+
+../alchemi-env/lib/python3.11/site-packages/_pytest/approx.py:156: TypeError
+=============================== warnings summary ===============================
+../alchemi-env/lib/python3.11/site-packages/_pytest/config/__init__.py:1636
+  <venv>/lib/python3.11/site-packages/_pytest/config/__init__.py:1636: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED test/training/distillation/test_evaluation_accuracy.py::TestEvaluateAccuracy::test_metrics_do_not_depend_on_how_the_holdout_is_batched
+1 failed, 73 passed, 3 skipped, 1 warning in 4.42s

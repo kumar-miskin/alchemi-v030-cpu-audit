@@ -1,0 +1,152 @@
+........................................................................ [  6%]
+.................ss............ss................ss..................... [ 12%]
+........................................................................ [ 18%]
+........................................................................ [ 24%]
+............ss....s..................................................... [ 31%]
+........................................................................ [ 37%]
+.......................................................s.s.s.s.s.s.s..s. [ 43%]
+s.s.s.s.s.s.s.s.s.s.s.s.s...........s................................... [ 49%]
+...........s.............s.........sssss.....s.......................... [ 55%]
+.............................F......s................................... [ 62%]
+.................................s............s.s..........s............ [ 68%]
+...................................ss..............s.................... [ 74%]
+s....................................................................... [ 80%]
+........................................................................ [ 86%]
+................................................s....................... [ 93%]
+...........................................................sssssssssssss [ 99%]
+ssssssss                                                                 [100%]
+=================================== FAILURES ===================================
+___ TestOnPolicyLabelingOverhead.test_labeling_overhead_stays_within_budget ____
+
+self = <test.training.distillation.test_on_policy.TestOnPolicyLabelingOverhead object at 0x7ff1454e25d0>
+
+    def test_labeling_overhead_stays_within_budget(self) -> None:
+        """Labeling every step of a segment costs a bounded multiple of generating it."""
+        student = _build_demo_model()
+        scorer = _make_scorer(_build_direct_force_teacher(seed=2))
+        labeled = NVTLangevin(student, **_LANGEVIN_KWARGS)
+        labeled.register_hook(TeacherLabelHook(scorer))
+        captured = NVTLangevin(student, **_LANGEVIN_KWARGS)
+        captured.register_hook(
+            TeacherLabelHook(scorer, sink=HostMemory(capacity=10_000))
+        )
+    
+        bare_seconds = self._time_segment(NVTLangevin(student, **_LANGEVIN_KWARGS), 40)
+        labeled_seconds = self._time_segment(labeled, 40)
+        captured_seconds = self._time_segment(captured, 40)
+    
+        measured = (
+            f"generation {bare_seconds:.3f}s; labeling every step "
+            f"{labeled_seconds / bare_seconds:.2f}x; labeling and capturing "
+            f"{captured_seconds / bare_seconds:.2f}x"
+        )
+        assert labeled_seconds / bare_seconds < 3.0, measured
+>       assert captured_seconds / bare_seconds < 4.0, measured
+E       AssertionError: generation 0.044s; labeling every step 1.73x; labeling and capturing 5.00x
+E       assert (0.21932065900000453 / 0.043889818000025116) < 4.0
+
+test/training/distillation/test_on_policy.py:1864: AssertionError
+=============================== warnings summary ===============================
+../alchemi-env/lib/python3.11/site-packages/_pytest/config/__init__.py:1474
+  <venv>/lib/python3.11/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+nvalchemi/training/peft/_peft.py:19
+  <release-source>/nvalchemi/training/peft/_peft.py:19: ExperimentalFeatureWarning: You are importing from 'physicsnemo.experimental'. The APIs in this namespace are experimental, under active development, and may change without notice. Expect possible back-compatibility breaking changes and only partial test coverage.
+    from physicsnemo.experimental import peft as _physicsnemo_peft
+
+test/training/distillation/test_advanced_objectives.py::TestEmbeddingObjectiveRun::test_projector_is_trained_by_its_own_optimizer
+test/training/distillation/test_advanced_objectives.py::TestEmbeddingObjectiveRun::test_repeated_batch_drives_the_objective_down
+test/training/distillation/test_advanced_objectives.py::TestEmbeddingObjectiveRun::test_biasless_projector_restores_from_a_checkpoint
+  <release-source>/nvalchemi/hooks/_registry.py:221: UserWarning: DistillationStrategy is labeling batches on the fly: a batch reached the forward pass without the teacher fields ['teacher_energy', 'teacher_node_embeddings'], so a teacher pass now runs for every such batch, in training and validation alike. Label the dataset ahead of time with label_dataset to avoid the cost, or set label_missing=False to surface it as a missing target instead.
+    hook(ctx, stage)
+
+test/training/distillation/test_advanced_objectives.py::TestEmbeddingObjectiveRun::test_student_is_trained_alongside_the_projector
+test/training/distillation/test_advanced_objectives.py::TestEmbeddingObjectiveRun::test_frozen_trunk_run_trains_the_projector_alone
+  <release-source>/nvalchemi/hooks/_registry.py:221: UserWarning: DistillationStrategy is labeling batches on the fly: a batch reached the forward pass without the teacher fields ['teacher_node_embeddings'], so a teacher pass now runs for every such batch, in training and validation alike. Label the dataset ahead of time with label_dataset to avoid the cost, or set label_missing=False to surface it as a missing target instead.
+    hook(ctx, stage)
+
+test/training/distillation/test_advanced_objectives.py::TestHessianObjectiveRun::test_student_is_trained_through_the_second_derivative
+test/training/distillation/test_advanced_objectives.py::TestHessianObjectiveRun::test_conservative_student_validates_in_evaluation_mode
+test/training/distillation/test_advanced_objectives.py::TestHessianObjectiveRun::test_validation_passes_score_along_one_probe
+test/training/distillation/test_advanced_objectives.py::TestHessianObjectiveRun::test_validation_batches_are_scored_along_distinct_probes
+  <release-source>/nvalchemi/hooks/_registry.py:221: UserWarning: DistillationStrategy is labeling batches on the fly: a batch reached the forward pass without the teacher fields ['teacher_energy', 'teacher_hvp', 'teacher_hvp_probe'], so a teacher pass now runs for every such batch, in training and validation alike. Label the dataset ahead of time with label_dataset to avoid the cost, or set label_missing=False to surface it as a missing target instead.
+    hook(ctx, stage)
+
+test/training/distillation/test_advanced_objectives.py::TestDistributionObjectiveValidation::test_validation_config_with_its_own_pointwise_loss_is_accepted
+test/training/distillation/test_strategy.py::TestDistillationStrategyLabeling::test_missing_custom_teacher_field_surfaces_as_a_missing_target
+test/training/distillation/test_strategy.py::TestDistillationStrategyExecution::test_auxiliary_model_is_updated_alongside_the_student
+  <release-source>/nvalchemi/hooks/_registry.py:221: UserWarning: DistillationStrategy is labeling batches on the fly: a batch reached the forward pass without the teacher fields ['teacher_energy'], so a teacher pass now runs for every such batch, in training and validation alike. Label the dataset ahead of time with label_dataset to avoid the cost, or set label_missing=False to surface it as a missing target instead.
+    hook(ctx, stage)
+
+test/training/distillation/test_advanced_objectives.py::TestDistributionObjectiveRun::test_boltzmann_checkpoint_resumes_with_on_policy_resupplied
+test/training/distillation/test_advanced_objectives.py::TestDistributionObjectiveRun::test_boltzmann_checkpoint_refusal_names_the_way_back
+test/training/distillation/test_advanced_objectives.py::TestRuntimeOverrideRebuild::test_a_checkpoint_rebuild_forwards_the_loop_as_a_runtime_override
+test/training/distillation/test_advanced_objectives.py::TestRuntimeOverrideRebuild::test_an_unknown_runtime_override_is_refused_by_name
+  <release-source>/nvalchemi/training/strategy.py:1580: UserWarning: on_policy and reference_dataset hold live runtime objects and are omitted from the spec, so a strategy rebuilt from it runs offline over the dataloader passed to run(). Re-supply them at construction to keep generating on-policy.
+    **self.to_spec_dict(),
+
+test/training/distillation/test_advanced_objectives.py::TestRuntimeOverrideRebuild::test_an_explicit_loop_is_taken_by_from_spec_dict
+  <release-source>/test/training/distillation/test_advanced_objectives.py:1351: UserWarning: on_policy and reference_dataset hold live runtime objects and are omitted from the spec, so a strategy rebuilt from it runs offline over the dataloader passed to run(). Re-supply them at construction to keep generating on-policy.
+    spec = json.loads(json.dumps(strategy.to_spec_dict()))
+
+test/training/distillation/test_on_policy.py: 6 warnings
+test/training/distillation/test_strategy.py: 4 warnings
+  <release-source>/nvalchemi/hooks/_registry.py:221: UserWarning: DistillationStrategy is labeling batches on the fly: a batch reached the forward pass without the teacher fields ['teacher_energy', 'teacher_forces'], so a teacher pass now runs for every such batch, in training and validation alike. Label the dataset ahead of time with label_dataset to avoid the cost, or set label_missing=False to surface it as a missing target instead.
+    hook(ctx, stage)
+
+test/training/distillation/test_relaxation.py: 19 warnings
+  <release-source>/nvalchemi/training/distillation/config.py:1321: UserWarning: The convergence criterion reads ['convergence_score'], which one compute() of FIRE on an initial structure did not produce, so whether it fires cannot be checked at construction. A hook writing the key during the step is fine; a key nothing writes never converges.
+    _probe_criterion(probed, self.dynamics, criterion)
+
+test/training/distillation/test_relaxation.py::TestRelaxationDivergence::test_a_budget_graduate_with_a_non_finite_state_is_not_captured
+  <release-source>/nvalchemi/training/distillation/strategy.py:2646: UserWarning: Every generated trajectory has finished and the initial structures have nothing left to start a fresh one from, so generation stopped after 2 propagator steps with 5 frames in the replay buffer; the remaining 2 training steps draw from that buffer. Pass initial_structures=InitialStructures(dataset, recycle=True) to keep generating from the front of the rows this rank owns, or start from more structures — an unbudgeted source is propagated whole, so more of them lengthen the run by widening the initial batch rather than by backfilling it.
+    self._warn_generation_exhausted(config, target_step_count, state)
+
+test/training/distillation/test_relaxation.py::TestRelaxationCapture::test_a_fused_propagator_stores_the_frames_a_bare_one_does
+  <release-source>/nvalchemi/training/distillation/config.py:1321: UserWarning: The convergence criterion reads ['convergence_score'], which one compute() of FusedStage on an initial structure did not produce, so whether it fires cannot be checked at construction. A hook writing the key during the step is fine; a key nothing writes never converges.
+    _probe_criterion(probed, self.dynamics, criterion)
+
+test/training/distillation/test_relaxation.py::TestRelaxationCapture::test_a_budget_graduating_the_batch_is_captured_on_that_step
+  <release-source>/test/training/distillation/test_relaxation.py:277: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    round(float(value), 6)
+
+test/training/distillation/test_strategy.py: 13 warnings
+  <release-source>/nvalchemi/hooks/_registry.py:221: UserWarning: DistillationStrategy is labeling batches on the fly: a batch reached the forward pass without the teacher fields ['teacher_atomic_energies', 'teacher_energy', 'teacher_forces'], so a teacher pass now runs for every such batch, in training and validation alike. Label the dataset ahead of time with label_dataset to avoid the cost, or set label_missing=False to surface it as a missing target instead.
+    hook(ctx, stage)
+
+test/training/distillation/test_strategy.py::TestDistillationStrategyExecution::test_explicit_signals_missing_from_a_store_are_scored_every_batch
+  <release-source>/nvalchemi/hooks/_registry.py:221: UserWarning: DistillationStrategy is labeling batches on the fly: a batch reached the forward pass without the teacher fields ['teacher_forces'], so a teacher pass now runs for every such batch, in training and validation alike. Label the dataset ahead of time with label_dataset to avoid the cost, or set label_missing=False to surface it as a missing target instead.
+    hook(ctx, stage)
+
+test/training/test_peft_lora.py::TestLoRAHook::test_lora_strategy_applies_real_physicsnemo_peft
+test/training/test_peft_lora.py::TestLoRAHook::test_lora_target_patterns_record_cross_model_glob_matches
+test/training/test_peft_lora.py::TestLoRAStrategyMerge::test_lora_merge_model_inplace_folds_basic_linear_adapter
+  <release-source>/nvalchemi/training/peft/lora_wrappers.py:803: UserWarning: Skipping built-in LoRA wrapper CuEquivarianceLoRALinear: cuEquivariance LoRA requires cuequivariance-torch. Install the CUDA-aligned cuEq dependencies.
+    _register_lora_wrappers(registrations, temporary=True)
+
+test/training/test_peft_lora.py::TestLoRAHook::test_lora_strategy_applies_real_physicsnemo_peft
+test/training/test_peft_lora.py::TestLoRAHook::test_lora_target_patterns_record_cross_model_glob_matches
+test/training/test_peft_lora.py::TestLoRAStrategyMerge::test_lora_merge_model_inplace_folds_basic_linear_adapter
+  <release-source>/nvalchemi/training/peft/lora_wrappers.py:803: UserWarning: Skipping built-in LoRA wrapper EquivariantLoRALinear: Equivariant LoRA requires e3nn. Install the e3nn dependency.
+    _register_lora_wrappers(registrations, temporary=True)
+
+test/training/test_peft_lora.py::TestLoRAHook::test_lora_strategy_applies_real_physicsnemo_peft
+test/training/test_peft_lora.py::TestLoRAHook::test_lora_target_patterns_record_cross_model_glob_matches
+test/training/test_peft_lora.py::TestLoRAStrategyMerge::test_lora_merge_model_inplace_folds_basic_linear_adapter
+  <release-source>/nvalchemi/training/peft/lora_wrappers.py:803: UserWarning: Skipping built-in LoRA wrapper E3NNFullyConnectedLoRALayer: Equivariant LoRA requires e3nn. Install the e3nn dependency.
+    _register_lora_wrappers(registrations, temporary=True)
+
+test/training/test_peft_lora.py::TestLoadPeftCheckpointIntoModel::test_loads_custom_lora_wrapper_with_allowed_import_path_or_namespace[False]
+test/training/test_peft_lora.py::TestLoadPeftCheckpointIntoModel::test_loads_custom_lora_wrapper_with_allowed_import_path_or_namespace[True]
+test/training/test_peft_lora.py::TestLoadPeftCheckpointIntoModel::test_loads_custom_imports_with_trust_remote_code
+  <python-install>/cpython-3.11.17-linux-x86_64-gnu/lib/python3.11/contextlib.py:137: UserWarning: Temporarily overriding LoRA wrapper for torch.nn.modules.linear.Linear: physicsnemo.experimental.peft.lora.LoRALinear -> test.training.test_peft_lora._CustomCheckpointLoRAWrapper.
+    return next(self.gen)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+------------------ generated xml file: /tmp/alchemi-suite.xml ------------------
+=========================== short test summary info ============================
+FAILED test/training/distillation/test_on_policy.py::TestOnPolicyLabelingOverhead::test_labeling_overhead_stays_within_budget
+1 failed, 1089 passed, 70 skipped, 77 warnings in 64.14s (0:01:04)

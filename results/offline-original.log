@@ -1,0 +1,15 @@
+Warp CUDA warning: Could not find or load the NVIDIA CUDA driver. GPU execution will not be available.
+Warp 1.19.0 initialized:
+   CUDA Toolkit 13.4, CUDA driver not available (NVRTC compilation available)
+   Devices:
+     "cpu"      : "x86_64"
+   Kernel cache:
+     <warp-cache>
+Source dataset: 48 systems, 6 atoms each
+Labeled 48 systems into labeled.zarr
+Stored fields: atom_categories, atomic_masses, atomic_numbers, positions, teacher_atomic_energies, teacher_energy, teacher_forces, velocities
+Teacher signals: atomic_energies, energy, forces
+Completed 60 steps over 5 epochs
+Mean loss, first pass: 0.3415
+Mean loss, last pass:  0.0034
+Reduction: 99.0%

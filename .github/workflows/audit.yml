@@ -1,0 +1,21 @@
+name: CPU release audit
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install uv
+      - run: |
+          git clone https://github.com/NVIDIA/nvalchemi-toolkit.git upstream
+          git -C upstream checkout 77d3c9e930a3eab5f44b61a7ffaf161609e13be2
+          uv venv --python 3.11 .venv
+          uv pip install --index-strategy unsafe-best-match --python .venv/bin/python -r requirements.lock.txt
+      - run: .venv/bin/python audit_distillation.py --source upstream --output results/rerun.json
+      - run: .venv/bin/python upstream/examples/intermediate/10_onpolicy_distillation.py

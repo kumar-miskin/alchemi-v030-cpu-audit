@@ -1,0 +1,19 @@
+Warp CUDA warning: Could not find or load the NVIDIA CUDA driver. GPU execution will not be available.
+Warp 1.19.0 initialized:
+   CUDA Toolkit 13.4, CUDA driver not available (NVRTC compilation available)
+   Devices:
+     "cpu"      : "x86_64"
+   Kernel cache:
+     <warp-cache>
+Teacher autograd outputs: []
+Student autograd outputs: ['forces']
+Initial structures: 4, reference structures: 8
+Reference fields: atom_categories, atomic_masses, atomic_numbers, positions, teacher_energy, teacher_forces, velocities
+Teacher signals: energy, forces
+Replay buffer: 60 frames
+Buffer schema: node.atom_categories, node.atomic_masses, node.atomic_numbers, node.positions, node.teacher_forces, node.velocities, system.teacher_energy
+Batch compositions (generated, reference): [(2, 2)]
+Completed 12 steps over 3 segments
+Mean loss, first segment: 0.2493
+Mean loss, last segment:  0.0675
+Reduction: 72.9%
